@@ -2,10 +2,10 @@
 import { ref } from 'vue'
 import WordleBoard from './components/WordleBoard.vue'
 
-const msg = ref('Hello Wordle!!!')
+const msg = ref('TESTS')
 </script>
 
 <template>
   <h1>You did it!</h1>
-  <WordleBoard :msg="msg" />
+  <WordleBoard :word-of-the-day="msg" />
 </template>
