@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import WordleBoard from '../WordleBoard.vue'
-import { DEFEAT_MESSAGE, VICTORY_MESSAGE } from '@/settings'
+import { DEFEAT_MESSAGE, VICTORY_MESSAGE, WORD_SIZE } from '@/settings'
 
 describe('WordleBoard', () => {
   const wordOfTheDay = 'TESTS'
@@ -51,14 +51,18 @@ describe('WordleBoard', () => {
       },
     )
 
-    test('No warning is emitted if the word of the day is a real, uppercase, 5 charactesrs English word', async () => {
+    test(`No warning is emitted if the word of the day is a real, uppercase, ${WORD_SIZE} charactesrs English word`, async () => {
       mount(WordleBoard, { props: { wordOfTheDay: 'TESTS' } })
       expect(console.warn).not.toHaveBeenCalled()
     })
   })
 
   describe('Player input', () => {
-    test.todo('player guesses are limited to 5 letters')
+    test('player guesses are limited to 5 letters', async () => {
+      await playerSubmitGuess(wordOfTheDay + 'EXTRA')
+
+      expect(wrapper.text()).toContain(VICTORY_MESSAGE)
+    })
     test.todo('player guesses can only be submitted if they are real words')
     test.todo('player guesses are not case-sensitive')
     test.todo('player guesses can only contain letters')
