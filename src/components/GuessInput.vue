@@ -2,6 +2,7 @@
 import { WORD_SIZE } from '@/settings'
 import englishWords from '@/englishWordsWith5Letters.json'
 import { ref, watch } from 'vue'
+import GuessDisplayer from './GuessDisplayer.vue'
 
 const guessInProgress = ref('')
 
@@ -31,15 +32,7 @@ const onSubmit = () => {
 </script>
 <template>
   <section>
-    <ul class="flex flex-nowrap gap-2">
-      <li
-        v-for="(char, index) in guessInProgress.padEnd(WORD_SIZE, ' ')"
-        :key="index"
-        class="flex justify-center items-center w-20 h-20 font-semibold text-3xl border border-gray-500"
-      >
-        {{ char }}
-      </li>
-    </ul>
+    <GuessDisplayer :guess="guessInProgress" />
     <input
       type="text"
       v-model="guessInProgress"
