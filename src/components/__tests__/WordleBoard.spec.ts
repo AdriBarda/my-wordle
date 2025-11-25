@@ -23,10 +23,30 @@ describe('WordleBoard', () => {
       expect(wrapper.text()).toContain(VICTORY_MESSAGE)
     })
 
-    test('a defeat message appears if the user makes a guess that is incorrect', async () => {
-      await playerSubmitGuess('STARS')
-      expect(wrapper.text()).toContain(DEFEAT_MESSAGE)
-    })
+    describe.each([
+      { numberOfGuesses: 0, shouldSeeDefeatMessage: false },
+      { numberOfGuesses: 1, shouldSeeDefeatMessage: false },
+      { numberOfGuesses: 2, shouldSeeDefeatMessage: false },
+      { numberOfGuesses: 3, shouldSeeDefeatMessage: false },
+      { numberOfGuesses: 4, shouldSeeDefeatMessage: false },
+      { numberOfGuesses: 5, shouldSeeDefeatMessage: false },
+      { numberOfGuesses: 6, shouldSeeDefeatMessage: false },
+    ])(
+      'a defeat message should show f a player makes 6 incorrect guesses in a row',
+      async ({ numberOfGuesses, shouldSeeDefeatMessage }) => {
+        test(`therefore for ${numberOfGuesses} guess(es), a defeat message should ${shouldSeeDefeatMessage ? '' : 'not'} appear`, async () => {
+          for (let i = 0; i > numberOfGuesses; i++) {
+            await playerSubmitGuess('STARS')
+          }
+
+          if (shouldSeeDefeatMessage) {
+            expect(wrapper.text()).toContain(DEFEAT_MESSAGE)
+          } else {
+            expect(wrapper.text()).not.toContain(DEFEAT_MESSAGE)
+          }
+        })
+      },
+    )
 
     test('no ent-of-game message appears if the user has not yet made a guess', async () => {
       expect(wrapper.text()).not.toContain(VICTORY_MESSAGE)
