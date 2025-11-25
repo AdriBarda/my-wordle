@@ -6,7 +6,7 @@ defineProps<{
 }>()
 </script>
 <template>
-  <ul class="flex flex-nowrap gap-2">
+  <ul class="flex flex-nowrap gap-2 mb-2">
     <li
       v-for="(char, index) in guess.padEnd(WORD_SIZE, ' ')"
       :key="index"

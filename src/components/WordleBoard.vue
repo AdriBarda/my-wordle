@@ -3,6 +3,7 @@ import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE } from '@/settings'
 import englishWords from '@/englishWordsWith5Letters.json'
 import { computed, ref } from 'vue'
 import GuessInput from './GuessInput.vue'
+import GuessDisplayer from './GuessDisplayer.vue'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -25,9 +26,9 @@ const isGameOver = computed(
   <div
     :class="[guessesSubmitted ? 'block' : 'hidden', 'absolute w-screen h-screen bg-black/10']"
   ></div>
-  <ul>
+  <ul class="m-0 p-0">
     <li v-for="(guess, index) in guessesSubmitted" :key="`${index}-${guess}`">
-      {{ guess }}
+      <GuessDisplayer :guess="guess" />
     </li>
   </ul>
   <p
