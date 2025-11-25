@@ -25,6 +25,11 @@ const isGameOver = computed(
   <div
     :class="[guessesSubmitted ? 'block' : 'hidden', 'absolute w-screen h-screen bg-black/10']"
   ></div>
+  <ul>
+    <li v-for="(guess, index) in guessesSubmitted" :key="`${index}-${guess}`">
+      {{ guess }}
+    </li>
+  </ul>
   <p
     v-if="isGameOver"
     v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE"
