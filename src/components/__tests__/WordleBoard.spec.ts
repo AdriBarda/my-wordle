@@ -122,6 +122,26 @@ describe('WordleBoard', () => {
 
       expect(wrapper.find<HTMLInputElement>('input[type=text]').element.value).toEqual('')
     })
+
+    test(`player can't add any more guesses after max amount of guesses has been reached`, async () => {
+      const guesses = ['WRONG', 'GUESS', 'HELLO', 'WORLD', 'HAPPY', 'CODER']
+
+      for (const guess of guesses) {
+        await playerSubmitGuess(guess)
+      }
+
+      expect(
+        wrapper.find<HTMLInputElement>('input[type=text]').attributes('disabled'),
+      ).not.toBeUndefined()
+    })
+
+    test(`player can't keep adding after making a correct guess`, async () => {
+      await playerSubmitGuess(wordOfTheDay)
+
+      expect(
+        wrapper.find<HTMLInputElement>('input[type=text]').attributes('disabled'),
+      ).not.toBeUndefined()
+    })
   })
 
   test('all previous player guesses are visible in the page', async () => {

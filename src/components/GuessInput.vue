@@ -4,6 +4,8 @@ import englishWords from '@/englishWordsWith5Letters.json'
 import { ref, watch } from 'vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 
+const { disabled = false } = defineProps<{ disabled?: boolean }>()
+
 const guessInProgress = ref('')
 
 const emit = defineEmits<{
@@ -32,13 +34,14 @@ const onSubmit = () => {
 </script>
 <template>
   <section>
-    <GuessDisplayer :guess="guessInProgress" />
+    <GuessDisplayer v-if="!disabled" :guess="guessInProgress" />
     <input
       type="text"
       v-model="guessInProgress"
-      class="opacity-0"
+      class="opacity-0 absolute"
       :maxlength="WORD_SIZE"
       autofocus
+      :disabled="disabled"
       @blur="({ target }) => (target as HTMLInputElement).focus()"
       @keydown.enter="onSubmit"
     />
