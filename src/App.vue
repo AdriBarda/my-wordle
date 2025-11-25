@@ -6,6 +6,5 @@ const msg = ref('TESTS')
 </script>
 
 <template>
-  <h1>You did it!</h1>
   <WordleBoard :word-of-the-day="msg" />
 </template>

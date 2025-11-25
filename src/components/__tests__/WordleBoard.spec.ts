@@ -40,7 +40,7 @@ describe('WordleBoard', () => {
     })
 
     test.each([
-      { wordOfTheDay: 'FLY', reason: 'word-of-the-day must have 5 characters' },
+      { wordOfTheDay: 'FLY', reason: `word-of-the-day must have ${WORD_SIZE} characters` },
       { wordOfTheDay: 'zesty', reason: 'word-of-the-day must be uppercase' },
       { wordOfTheDay: 'QWERT', reason: 'word-of-the-day must be a valid English word' },
     ])(
@@ -58,7 +58,19 @@ describe('WordleBoard', () => {
   })
 
   describe('Player input', () => {
-    test('player guesses are limited to 5 letters', async () => {
+    test('player input remains in focus all the time', async () => {
+      document.body.innerHTML = `<div id="app"></div>`
+      wrapper = mount(WordleBoard, {
+        props: { wordOfTheDay },
+        attachTo: '#app',
+      })
+
+      expect(wrapper.find('input[type=text]').attributes('autofocus')).not.toBeUndefined()
+      await wrapper.find('input[type=text]').trigger('blur')
+      expect(document.activeElement).toBe(wrapper.find('input[type=text]').element)
+    })
+
+    test(`player guesses are limited to ${WORD_SIZE} letters`, async () => {
       await playerSubmitGuess(wordOfTheDay + 'EXTRA')
 
       expect(wrapper.text()).toContain(VICTORY_MESSAGE)
