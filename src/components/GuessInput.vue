@@ -26,6 +26,7 @@ const onSubmit = () => {
   if (!englishWords.includes(guessInProgress.value)) return
 
   emit('guess-submitted', guessInProgress.value)
+  guessInProgress.value = ''
 }
 </script>
 <template>
