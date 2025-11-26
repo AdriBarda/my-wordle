@@ -59,7 +59,7 @@ describe('WordleBoard', () => {
     })
   })
 
-  describe('Rule sfor defining the word of the day', () => {
+  describe('Rules for defining the word of the day', () => {
     beforeEach(() => {
       console.warn = vi.fn()
     })
@@ -218,21 +218,18 @@ describe('WordleBoard', () => {
       const wordOfTheDay = 'WORLD'
       const guess = 'WRONG'
 
-      test.skipIf(expectedFeedback === 'almost')(
-        `the feedback for '${guess[position]}' (index: ${position}) should be '${expectedFeedback}' because '${reason}'`,
-        async () => {
-          wrapper = mount(WordleBoard, { props: { wordOfTheDay } })
+      test(`the feedback for '${guess[position]}' (index: ${position}) should be '${expectedFeedback}' because '${reason}'`, async () => {
+        wrapper = mount(WordleBoard, { props: { wordOfTheDay } })
 
-          await playerTypesAndSubmitsGuess(guess)
+        await playerTypesAndSubmitsGuess(guess)
 
-          const currentFeedback = wrapper
-            .findAll('[data-letter]')
-            .at(position)
-            ?.attributes('data-letter-feedback')
+        const currentFeedback = wrapper
+          .findAll('[data-letter]')
+          .at(position)
+          ?.attributes('data-letter-feedback')
 
-          expect(currentFeedback).toEqual(expectedFeedback)
-        },
-      )
+        expect(currentFeedback).toEqual(expectedFeedback)
+      })
     },
   )
 })
