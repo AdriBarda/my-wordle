@@ -10,12 +10,14 @@ const getFeedback = (charPosition: number): null | 'correct' | 'incorrect' | 'al
   const { guess, answer } = props
   if (!guess || !answer) return null
 
-  const letter = guess[charPosition]
-  if (!letter) return null
+  const letterGuessed = guess[charPosition]
+  const letterExpected = answer[charPosition]
 
-  if (answer[charPosition] === letter) return 'correct'
-  if (answer.includes(letter)) return 'almost'
-  return 'incorrect'
+  if (!letterGuessed) return null
+
+  if (!answer.includes(letterGuessed)) return 'incorrect'
+
+  return letterExpected === letterGuessed ? 'correct' : 'almost'
 }
 </script>
 
