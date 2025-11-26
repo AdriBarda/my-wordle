@@ -156,8 +156,34 @@ describe('WordleBoard', () => {
       await playerTypesAndSubmitsGuess(guess)
     }
 
-    for (const guess of guesses) {
-      expect(wrapper.text()).toContain(guess)
-    }
+    const rows = wrapper.findAll('[data-test="guess-row"]')
+    expect(rows).toHaveLength(guesses.length)
+
+    rows.forEach((rowWrapper, i) => {
+      const fronts = rowWrapper.findAll('.face-front')
+      const word = fronts.map((f) => f.text()).join('')
+      expect(word).toBe(guesses[i])
+    })
+  })
+
+  describe('Displaying feedback to the player', () => {
+    test('feedback not displayed until player submits guess', async () => {
+      expect(
+        wrapper.find('[data-letter-feedback]').exists(),
+        'Feedback was being rendered before the player started typing his/her guess',
+      ).toBe(false)
+
+      await playerTypesGuess(wordOfTheDay)
+      expect(
+        wrapper.find('[data-letter-feedback]').exists(),
+        'Feedback was being rendered while the player was typing his/her guess',
+      ).toBe(false)
+
+      await playerPressesEnter()
+      expect(
+        wrapper.find('[data-letter-feedback]').exists(),
+        'Feedback was not rendered after the player submitted his/her guess',
+      ).toBe(true)
+    })
   })
 })

@@ -34,7 +34,7 @@ const emptyGuessesCount = computed(() => {
   ></div>
   <ul class="m-0 p-0">
     <li v-for="(guess, index) in guessesSubmitted" :key="`${index}-${guess}`">
-      <GuessDisplayer :guess="guess" />
+      <GuessDisplayer :guess="guess" :should-flip="true" />
     </li>
     <li>
       <GuessInput
