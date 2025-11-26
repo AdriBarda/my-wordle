@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { WORD_SIZE } from '@/settings'
 
-const { shouldShowFeedback = false } = defineProps<{
+const props = defineProps<{
   guess?: string
-  shouldShowFeedback?: boolean
+  answer?: string
 }>()
+
+const getFeedback = (letterPosition: number) => {
+  if (!props.answer) return null
+
+  return props.guess && props.answer[letterPosition] === props.guess[letterPosition]
+    ? 'correct'
+    : 'incorrect'
+}
 </script>
 
 <template>
@@ -14,13 +22,13 @@ const { shouldShowFeedback = false } = defineProps<{
       :key="index"
       class="w-20 h-20 perspective-midrange"
       :data-letter="char"
-      :data-letter-feedback="shouldShowFeedback ? 'correct' : null"
+      :data-letter-feedback="getFeedback(index)"
     >
       <div
         class="inner w-full h-full relative transform-3d"
         :class="[
-          shouldShowFeedback && 'animate-flip-vertical animate-duration-400',
-          shouldShowFeedback &&
+          answer && 'animate-flip-vertical animate-duration-400',
+          answer &&
             [
               'animate-delay-0',
               'animate-delay-100',
