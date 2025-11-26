@@ -6,7 +6,7 @@ const props = defineProps<{
   answer?: string
 }>()
 
-const getFeedback = (letterPosition: number) => {
+const getFeedback = (letterPosition: number): null | 'correct' | 'incorrect' | 'almost' => {
   if (!props.answer) return null
 
   return props.guess && props.answer[letterPosition] === props.guess[letterPosition]
