@@ -7,6 +7,7 @@ import GuessDisplayer from './GuessDisplayer.vue'
 const { disabled = false } = defineProps<{ disabled?: boolean }>()
 
 const guessInProgress = ref('')
+const guessIsInvalid = ref(false)
 
 const emit = defineEmits<{
   'guess-submitted': [guess: string]
@@ -26,7 +27,13 @@ watch(guessInProgress, (raw) => {
 })
 
 const onSubmit = () => {
-  if (!englishWords.includes(guessInProgress.value)) return
+  if (!englishWords.includes(guessInProgress.value)) {
+    if (guessInProgress.value) guessIsInvalid.value = true
+    setTimeout(() => {
+      guessIsInvalid.value = false
+    }, 500)
+    return
+  }
 
   emit('guess-submitted', guessInProgress.value)
   guessInProgress.value = ''
@@ -34,7 +41,11 @@ const onSubmit = () => {
 </script>
 <template>
   <section>
-    <GuessDisplayer v-if="!disabled" :guess="guessInProgress" />
+    <GuessDisplayer
+      v-if="!disabled"
+      :guess="guessInProgress"
+      :class="{ 'animate-shake animate-duration-250': guessIsInvalid }"
+    />
     <input
       type="text"
       v-model="guessInProgress"

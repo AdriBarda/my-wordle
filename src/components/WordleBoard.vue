@@ -49,6 +49,6 @@ const emptyGuessesCount = computed(() => {
   <p
     v-if="isGameOver"
     v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE"
-    class="absolute flex items-center justify-center text-4xl text-pretty text-center text-white bg-black rounded-3xl shadow-lg w-[750px] h-96 top-1/2 left-1/2 -translate-1/2 z-10"
+    class="absolute flex items-center justify-center text-4xl text-pretty text-center text-white bg-black rounded-3xl shadow-lg w-[750px] h-96 top-1/2 left-1/2 -translate-1/2 z-10 animate-tada animate-duration-400"
   />
 </template>
