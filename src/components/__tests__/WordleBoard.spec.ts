@@ -232,4 +232,19 @@ describe('WordleBoard', () => {
       })
     },
   )
+
+  test('A keyboard with all english alphabet characters renders on screen', async () => {
+    const alphabet = 'qwertyuiopasdfghjklzxcvbnm'
+
+    const alphabetList = alphabet.toUpperCase().split('')
+
+    const keyboardKeys = wrapper.findAll('[keyboard-test="keyboard-key"]')
+
+    expect(keyboardKeys).toHaveLength(alphabetList.length)
+
+    keyboardKeys.forEach((keyWrapper, i) => {
+      const renderedKey = keyWrapper.text()
+      expect(renderedKey).toBe(alphabetList[i])
+    })
+  })
 })
