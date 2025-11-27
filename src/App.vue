@@ -6,7 +6,10 @@ const msg = ref('TESTS')
 </script>
 
 <template>
-  <main id="#main" class="relative flex flex-col justify-center items-center">
+  <main
+    id="#main"
+    class="relative flex flex-col justify-center items-center min-h-screen w-full px-4 py-10"
+  >
     <WordleBoard :word-of-the-day="msg" />
   </main>
 </template>

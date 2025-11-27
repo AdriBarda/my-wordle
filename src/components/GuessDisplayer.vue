@@ -9,11 +9,11 @@ defineProps<{
 </script>
 
 <template>
-  <ul class="flex flex-nowrap gap-2 mb-2" data-test="guess-row">
+  <ul class="flex flex-nowrap gap-1" data-test="guess-row">
     <li
       v-for="(char, index) in guess?.padEnd(WORD_SIZE, ' ') || new Array(5)"
       :key="index"
-      class="w-20 h-20 perspective-midrange"
+      class="w-16 h-16 perspective-midrange"
     >
       <div
         class="inner w-full h-full relative transform-3d"

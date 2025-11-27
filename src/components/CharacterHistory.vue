@@ -29,24 +29,30 @@ watch(
 )
 </script>
 <template>
-  <div class="inline-flex flex-col gap-2 rounded-xl p-4">
-    <div v-for="(row, rowIndex) in keyboardRows" :key="rowIndex" class="flex gap-1 justify-center">
+  <div class="w-full inline-flex">
+    <div class="w-full max-w-4xl flex flex-col items-center gap-1">
       <div
-        v-for="char in row"
-        :key="char"
-        keyboard-test="keyboard-key"
-        :data-letter="char"
-        :data-letter-feedback="
-          visibleGuesses.length ? getKeyFeedback(char, visibleGuesses, answer) : null
-        "
-        :class="[
-          'key bg-gray-300',
-          'data-[letter-feedback=correct]:bg-green-500',
-          'data-[letter-feedback=almost]:bg-yellow-500',
-          'data-[letter-feedback=incorrect]:bg-gray-500',
-        ]"
+        v-for="(row, rowIndex) in keyboardRows"
+        :key="rowIndex"
+        class="flex justify-center gap-1 w-full"
       >
-        {{ char }}
+        <div
+          v-for="char in row"
+          :key="char"
+          keyboard-test="keyboard-key"
+          :data-letter="char"
+          :data-letter-feedback="
+            visibleGuesses.length ? getKeyFeedback(char, visibleGuesses, answer) : null
+          "
+          :class="[
+            'key bg-gray-300',
+            'data-[letter-feedback=correct]:bg-green-500',
+            'data-[letter-feedback=almost]:bg-yellow-500',
+            'data-[letter-feedback=incorrect]:bg-gray-500',
+          ]"
+        >
+          {{ char }}
+        </div>
       </div>
     </div>
   </div>
@@ -56,6 +62,6 @@ watch(
 @import 'tailwindcss';
 
 .key {
-  @apply flex justify-center items-center w-14 h-16  text-white font-semibold text-2xl rounded;
+  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-10 text-lg sm:w-14 sm:h-16 sm:text-xl;
 }
 </style>
