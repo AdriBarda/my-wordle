@@ -4,7 +4,7 @@ import englishWords from '@/englishWordsWith5Letters.json'
 import { computed, ref } from 'vue'
 import GuessInput from './GuessInput.vue'
 import GuessDisplayer from './GuessDisplayer.vue'
-import CharaterHistory from './CharaterHistory.vue'
+import CharaterHistory from './CharacterHistory.vue'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -47,7 +47,7 @@ const emptyGuessesCount = computed(() => {
       <GuessDisplayer />
     </li>
   </ul>
-  <CharaterHistory />
+  <CharaterHistory :guesses="guessesSubmitted" :answer="wordOfTheDay" />
   <p
     v-if="isGameOver"
     v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE"

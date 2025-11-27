@@ -1,24 +1,11 @@
 <script setup lang="ts">
 import { WORD_SIZE } from '@/settings'
+import { getFeedbackAtPosition } from '@/utils/feedback'
 
-const props = defineProps<{
+defineProps<{
   guess?: string
   answer?: string
 }>()
-
-const getFeedback = (charPosition: number): null | 'correct' | 'incorrect' | 'almost' => {
-  const { guess, answer } = props
-  if (!guess || !answer) return null
-
-  const letterGuessed = guess[charPosition]
-  const letterExpected = answer[charPosition]
-
-  if (!letterGuessed) return null
-
-  if (!answer.includes(letterGuessed)) return 'incorrect'
-
-  return letterExpected === letterGuessed ? 'correct' : 'almost'
-}
 </script>
 
 <template>
@@ -45,7 +32,7 @@ const getFeedback = (charPosition: number): null | 'correct' | 'incorrect' | 'al
         <div class="face face-front">{{ char }}</div>
         <div
           :data-letter="char"
-          :data-letter-feedback="getFeedback(index)"
+          :data-letter-feedback="getFeedbackAtPosition(index, guess, answer)"
           :class="[
             'face face-back text-white',
             'data-[letter-feedback=correct]:bg-green-500',
