@@ -44,20 +44,30 @@ describe('WordleBoard', () => {
       { numberOfGuesses: 3, shouldSeeDefeatMessage: false },
       { numberOfGuesses: 4, shouldSeeDefeatMessage: false },
       { numberOfGuesses: 5, shouldSeeDefeatMessage: false },
-      { numberOfGuesses: 6, shouldSeeDefeatMessage: false },
+      { numberOfGuesses: 6, shouldSeeDefeatMessage: true },
     ])(
       `a defeat message should show f a player makes ${MAX_GUESSES_COUNT} incorrect guesses in a row`,
       async ({ numberOfGuesses, shouldSeeDefeatMessage }) => {
         test(`therefore for ${numberOfGuesses} guess(es), a defeat message should ${shouldSeeDefeatMessage ? '' : 'not'} appear`, async () => {
           const confettiSpy = vi.spyOn(confettiModule, 'throwConfetti')
-          for (let i = 0; i > numberOfGuesses; i++) {
+          for (let i = 0; i < numberOfGuesses; i++) {
             await playerTypesAndSubmitsGuess('STARS')
           }
 
+          const msg = wrapper.find('[data-test="eog-message"]')
+          const word = wrapper.find('[data-test="word-of-the-day"]')
+
           if (shouldSeeDefeatMessage) {
-            expect(wrapper.text()).toContain(DEFEAT_MESSAGE)
+            // derrota: overlay + mensaje + palabra del día
+            expect(msg.exists()).toBe(true)
+            expect(msg.text()).toContain(DEFEAT_MESSAGE)
+
+            expect(word.exists()).toBe(true)
+            expect(word.text()).toContain(wordOfTheDay)
           } else {
-            expect(wrapper.text()).not.toContain(DEFEAT_MESSAGE)
+            // todavía no hay game over: nada renderizado
+            expect(msg.exists()).toBe(false)
+            expect(word.exists()).toBe(false)
           }
 
           expect(confettiSpy).not.toHaveBeenCalled()

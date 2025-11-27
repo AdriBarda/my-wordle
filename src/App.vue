@@ -17,6 +17,7 @@ wordOfTheDay.value = getRandomWord()
     id="#main"
     class="relative flex flex-col justify-center items-center min-h-screen w-full px-4 py-10"
   >
+    {{ wordOfTheDay }}
     <WordleBoard :word-of-the-day="wordOfTheDay" />
   </main>
 </template>

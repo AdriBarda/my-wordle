@@ -121,7 +121,16 @@ const emptyGuessesCount = computed(() => {
     v-if="isGameOver && !manualClose"
     class="fixed flex flex-col items-center justify-center text-3xl sm:text-4xl leading-snug text-center bg-white/90 border rounded-3xl shadow-2xl w-[min(90vw,32rem)] min-h-64 px-6 py-10 top-1/2 left-1/2 -translate-1/2 z-10 animate-tada animate-duration-400"
   >
-    <p v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE" />
-    <button class="cursor-pointer" @click="() => (manualClose = true)">Review board</button>
+    <p
+      data-test="eog-message"
+      v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE"
+    />
+    <div v-if="isDefeat" class="text-lg" data-test="word-of-the-day">
+      The word of the day was
+      <span class="font-bold">
+        {{ isDefeat ? wordOfTheDay : '' }}
+      </span>
+    </div>
+    <button class="cursor-pointer text-sm" @click="() => (manualClose = true)">Review board</button>
   </div>
 </template>
