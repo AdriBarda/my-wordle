@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE } from '@/settings'
 import englishWords from '@/englishWordsWith5Letters.json'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import GuessInput from './GuessInput.vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 import CharaterHistory from './CharacterHistory.vue'
+import { throwConfetti } from '@/utils/throwConfetti'
+import type { Origin } from 'canvas-confetti'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -16,11 +18,78 @@ const props = defineProps({
 
 const guessesSubmitted = ref<string[]>([])
 
-const isGameOver = computed(
-  () =>
-    guessesSubmitted.value.length === MAX_GUESSES_COUNT ||
-    guessesSubmitted.value.includes(props.wordOfTheDay),
+const manualClose = ref(false)
+
+const isVictory = computed(() => guessesSubmitted.value.includes(props.wordOfTheDay))
+
+const isDefeat = computed(
+  () => !isVictory.value && guessesSubmitted.value.length === MAX_GUESSES_COUNT,
 )
+
+const isGameOver = computed(() => isVictory.value || isDefeat.value)
+
+const throwRealisticConfetti = (origin: Origin = { y: 0.7 }) => {
+  throwConfetti(
+    200,
+    {
+      origin: origin,
+    },
+    0.25,
+    {
+      spread: 26,
+      startVelocity: 55,
+    },
+  )
+
+  throwConfetti(
+    200,
+    {
+      origin: origin,
+    },
+    0.2,
+    {
+      spread: 60,
+    },
+  )
+  throwConfetti(
+    200,
+    {
+      origin: origin,
+    },
+    0.35,
+    {
+      spread: 100,
+      decay: 0.91,
+      scalar: 0.8,
+    },
+  )
+  throwConfetti(
+    200,
+    {
+      origin: origin,
+    },
+    0.1,
+    {
+      spread: 120,
+      startVelocity: 25,
+      decay: 0.92,
+      scalar: 1.2,
+    },
+  )
+  throwConfetti(
+    200,
+    {
+      origin: origin,
+    },
+    0.25,
+    {
+      spread: 120,
+      startVelocity: 45,
+    },
+  )
+}
+
+watch(isVictory, () => throwRealisticConfetti({ y: 0.9 }))
 
 const emptyGuessesCount = computed(() => {
   const remainingGuesses = MAX_GUESSES_COUNT - guessesSubmitted.value.length
@@ -30,12 +99,6 @@ const emptyGuessesCount = computed(() => {
 </script>
 
 <template>
-  <div
-    :class="[
-      guessesSubmitted ? 'block' : 'hidden',
-      'fixed inset-0 bg-black/10 pointer-events-none',
-    ]"
-  ></div>
   <section class="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto px-4 pb-10 pt-2">
     <h1 class="text-3xl sm:text-5xl py-3 font-semibold font-mono">My Wordle Version</h1>
     <ul class="m-0 p-0 flex flex-col items-center gap-1 w-full">
@@ -54,9 +117,11 @@ const emptyGuessesCount = computed(() => {
     </ul>
     <CharaterHistory :guesses="guessesSubmitted" :answer="wordOfTheDay" />
   </section>
-  <p
-    v-if="isGameOver"
-    v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE"
-    class="fixed flex items-center justify-center text-3xl sm:text-4xl leading-snug text-center text-white bg-black rounded-3xl shadow-lg w-[min(90vw,32rem)] min-h-[16rem] px-6 py-10 top-1/2 left-1/2 -translate-1/2 z-10 animate-tada animate-duration-400"
-  />
+  <div
+    v-if="isGameOver && !manualClose"
+    class="fixed flex flex-col items-center justify-center text-3xl sm:text-4xl leading-snug text-center bg-white/90 border rounded-3xl shadow-2xl w-[min(90vw,32rem)] min-h-64 px-6 py-10 top-1/2 left-1/2 -translate-1/2 z-10 animate-tada animate-duration-400"
+  >
+    <p v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE" />
+    <button class="cursor-pointer" @click="() => (manualClose = true)">Review board</button>
+  </div>
 </template>

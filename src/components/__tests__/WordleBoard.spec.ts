@@ -1,11 +1,17 @@
+import { vi } from 'vitest'
+vi.mock('@/utils/throwConfetti', () => ({ throwConfetti: vi.fn() }))
+
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import WordleBoard from '../WordleBoard.vue'
 import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE, WORD_SIZE } from '@/settings'
+import * as confettiModule from '@/utils/throwConfetti'
 
 describe('WordleBoard', () => {
   const wordOfTheDay = 'TESTS'
   let wrapper: ReturnType<typeof mount>
   beforeEach(() => {
+    vi.clearAllMocks()
     // Arrange
     wrapper = mount(WordleBoard, { props: { wordOfTheDay } })
   })
@@ -23,9 +29,12 @@ describe('WordleBoard', () => {
   }
   describe('End of the game messages', () => {
     test('a victory message appears when the user makes a guess that matches the word of the day', async () => {
+      const confettiSpy = vi.spyOn(confettiModule, 'throwConfetti')
       await playerTypesAndSubmitsGuess(wordOfTheDay)
+      await nextTick()
       // Assert
       expect(wrapper.text()).toContain(VICTORY_MESSAGE)
+      expect(confettiSpy).toHaveBeenCalled()
     })
 
     describe.each([
@@ -40,6 +49,7 @@ describe('WordleBoard', () => {
       `a defeat message should show f a player makes ${MAX_GUESSES_COUNT} incorrect guesses in a row`,
       async ({ numberOfGuesses, shouldSeeDefeatMessage }) => {
         test(`therefore for ${numberOfGuesses} guess(es), a defeat message should ${shouldSeeDefeatMessage ? '' : 'not'} appear`, async () => {
+          const confettiSpy = vi.spyOn(confettiModule, 'throwConfetti')
           for (let i = 0; i > numberOfGuesses; i++) {
             await playerTypesAndSubmitsGuess('STARS')
           }
@@ -49,11 +59,13 @@ describe('WordleBoard', () => {
           } else {
             expect(wrapper.text()).not.toContain(DEFEAT_MESSAGE)
           }
+
+          expect(confettiSpy).not.toHaveBeenCalled()
         })
       },
     )
 
-    test('no ent-of-game message appears if the user has not yet made a guess', async () => {
+    test('no end-of-game message appears if the user has not yet made a guess', async () => {
       expect(wrapper.text()).not.toContain(VICTORY_MESSAGE)
       expect(wrapper.text()).not.toContain(DEFEAT_MESSAGE)
     })
