@@ -30,11 +30,11 @@ watch(
 </script>
 <template>
   <div class="w-full inline-flex">
-    <div class="w-full max-w-4xl flex flex-col items-center gap-1">
+    <div class="w-full max-w-4xl flex flex-col items-center gap-1.5">
       <div
         v-for="(row, rowIndex) in keyboardRows"
         :key="rowIndex"
-        class="flex justify-center gap-1 w-full"
+        class="flex justify-center gap-1.5 w-full"
       >
         <div
           v-for="char in row"
@@ -45,6 +45,11 @@ watch(
             visibleGuesses.length ? getKeyFeedback(char, visibleGuesses, answer) : null
           "
           :class="[
+            {
+              'animate-jelly animate-duration-400':
+                getKeyFeedback(char, visibleGuesses, answer) === 'correct' ||
+                getKeyFeedback(char, visibleGuesses, answer) === 'almost',
+            },
             'key bg-gray-300',
             'data-[letter-feedback=correct]:bg-green-500',
             'data-[letter-feedback=almost]:bg-yellow-500',
@@ -62,6 +67,6 @@ watch(
 @import 'tailwindcss';
 
 .key {
-  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-10 text-lg sm:w-14 sm:h-16 sm:text-xl;
+  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-lg sm:w-12 sm:h-16 sm:text-xl;
 }
 </style>

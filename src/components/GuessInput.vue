@@ -49,7 +49,7 @@ const onSubmit = () => {
     <input
       type="text"
       v-model="guessInProgress"
-      class="opacity-0 absolute"
+      class="opacity-0 absolute -z-10"
       :maxlength="WORD_SIZE"
       autofocus
       :disabled="disabled"
