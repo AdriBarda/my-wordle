@@ -58,14 +58,12 @@ describe('WordleBoard', () => {
           const word = wrapper.find('[data-test="word-of-the-day"]')
 
           if (shouldSeeDefeatMessage) {
-            // derrota: overlay + mensaje + palabra del día
             expect(msg.exists()).toBe(true)
             expect(msg.text()).toContain(DEFEAT_MESSAGE)
 
             expect(word.exists()).toBe(true)
             expect(word.text()).toContain(wordOfTheDay)
           } else {
-            // todavía no hay game over: nada renderizado
             expect(msg.exists()).toBe(false)
             expect(word.exists()).toBe(false)
           }
