@@ -25,6 +25,7 @@ const feedbackRank: Record<Exclude<Feedback, null>, number> = {
 
 export const getKeyFeedback = (char: string, guesses: string[], answer: string): Feedback => {
   let best: Feedback = null
+
   guesses.forEach((guess) => {
     for (let i = 0; i < guess.length; i++) {
       if (guess[i]?.toUpperCase() !== char.toUpperCase()) continue
