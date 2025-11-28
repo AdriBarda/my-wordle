@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { Feedback } from '@/utils/feedback'
+import type { Feedback, KeyboardKey, KeyboardAction } from '@/types'
 
 const props = defineProps<{
   guesses: string[]
@@ -9,36 +9,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'char-submitted': [
-    event: {
-      char: string
-      action: string | null
-      feedback: Feedback
-      animate: boolean
-    },
-  ]
+  'char-submitted': [event: KeyboardKey]
 }>()
 
 const alphabetCharacters = 'qwertyuiop|asdfghjkl|zxcvbnm'
 const revealedGuessCount = ref(0)
 
-const handleOnClick = ({
-  char,
-  action,
-  feedback,
-  animate,
-}: {
-  char: string
-  action: string | null
-  feedback: Feedback
-  animate: boolean
-}) => {
-  if (!action) {
-    emit('char-submitted', { char, action, feedback, animate })
-  } else {
-    emit('char-submitted', { char, action, feedback, animate })
-  }
-}
+const handleOnClick = (key: KeyboardKey) => emit('char-submitted', key)
 
 const visibleGuesses = computed(() => props.guesses.slice(0, revealedGuessCount.value))
 
@@ -58,7 +35,7 @@ const keyboardData = computed(() =>
       if (!isLetter.test(char)) {
         return {
           char,
-          action: char === '⏎' ? 'submit' : 'delete',
+          action: (char === '⏎' ? 'submit' : 'delete') as KeyboardAction,
           feedback: null,
           animate: false,
         }

@@ -7,8 +7,8 @@ import GuessDisplayer from './GuessDisplayer.vue'
 import CharaterHistory from './CharacterHistory.vue'
 import { throwConfetti } from '@/utils/throwConfetti'
 import { type Origin } from 'canvas-confetti'
-import { getGuessFeedback, getKeyFeedback, type GuessFeedbackEntry } from '@/utils/feedback'
-import type { Feedback } from '@/utils/feedback'
+import { getGuessFeedback, getKeyFeedback } from '@/utils/feedback'
+import type { Feedback, GuessFeedbackEntry } from '@/types'
 
 const props = defineProps({
   wordOfTheDay: {
