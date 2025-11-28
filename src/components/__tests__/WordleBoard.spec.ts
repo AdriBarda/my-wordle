@@ -210,33 +210,34 @@ describe('WordleBoard', () => {
     {
       position: 0,
       expectedFeedback: 'correct',
-      reason: "W is the first character of both 'WORLD' and 'WRONG'",
+      reason: "P is the first character of both 'PLANT' and 'PAPER'",
     },
     {
       position: 1,
       expectedFeedback: 'almost',
-      reason: "R exists in both words but it's in position '2' of 'WORLD'",
+      reason: "A exists in both words but it's in position '2' of 'PLANT'",
     },
     {
       position: 2,
-      expectedFeedback: 'almost',
-      reason: "O exists in both words but it's in position '1' of 'WORLD'",
+      expectedFeedback: 'incorrect',
+      reason:
+        "P exists in both words, exists only once in 'PLANT' and it's already marked as correct in position '1' of 'PLANT'",
     },
     {
       position: 3,
       expectedFeedback: 'incorrect',
-      reason: "N does not exist in 'WORLD'",
+      reason: "E does not exist in 'PLANT'",
     },
     {
       position: 4,
       expectedFeedback: 'incorrect',
-      reason: "G does not exist in 'WORLD'",
+      reason: "R does not exist in 'PLANT'",
     },
   ])(
-    "If the word of the day is 'WORLD' and the player types 'WRONG'",
+    "If the word of the day is 'PLANT' and the player types 'PAPER'",
     async ({ position, expectedFeedback, reason }) => {
-      const wordOfTheDay = 'WORLD'
-      const guess = 'WRONG'
+      const wordOfTheDay = 'PLANT'
+      const guess = 'PAPER'
 
       test(`the feedback for '${guess[position]}' (index: ${position}) should be '${expectedFeedback}' because '${reason}'`, async () => {
         wrapper = mount(WordleBoard, { props: { wordOfTheDay } })

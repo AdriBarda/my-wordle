@@ -6,7 +6,9 @@ import GuessInput from './GuessInput.vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 import CharaterHistory from './CharacterHistory.vue'
 import { throwConfetti } from '@/utils/throwConfetti'
-import type { Origin } from 'canvas-confetti'
+import { type Origin } from 'canvas-confetti'
+import { getGuessFeedback, getKeyFeedback, type GuessFeedbackEntry } from '@/utils/feedback'
+import type { Feedback } from '@/utils/feedback'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -16,11 +18,13 @@ const props = defineProps({
   },
 })
 
-const guessesSubmitted = ref<string[]>([])
+const guessesSubmitted = ref<GuessFeedbackEntry[]>([])
 
 const manualClose = ref(false)
 
-const isVictory = computed(() => guessesSubmitted.value.includes(props.wordOfTheDay))
+const isVictory = computed(() =>
+  guessesSubmitted.value.some((entry) => entry.guess === props.wordOfTheDay),
+)
 
 const isDefeat = computed(
   () => !isVictory.value && guessesSubmitted.value.length === MAX_GUESSES_COUNT,
@@ -96,35 +100,57 @@ const emptyGuessesCount = computed(() => {
 
   return isGameOver.value ? remainingGuesses : remainingGuesses - 1
 })
+
+const submittedGuesses = computed(() => guessesSubmitted.value.map(({ guess }) => guess))
+
+const keyFeedbacks = computed<Record<string, Feedback>>(() => {
+  const feedbacks: Record<string, Feedback> = {}
+  const usedLetters = new Set<string>()
+
+  guessesSubmitted.value.forEach(({ guess }) => {
+    guess.split('').forEach((char) => {
+      if (char) usedLetters.add(char.toUpperCase())
+    })
+  })
+
+  usedLetters.forEach((char) => {
+    feedbacks[char] = getKeyFeedback(char, guessesSubmitted.value)
+  })
+
+  return feedbacks
+})
 </script>
 
 <template>
   <section class="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto px-4 pb-10 pt-2">
     <h1 class="text-3xl sm:text-5xl py-3 font-semibold font-mono">My Wordle Version</h1>
     <ul class="m-0 p-0 flex flex-col items-center gap-1 w-full">
-      <li v-for="(guess, index) in guessesSubmitted" :key="`${index}-${guess}`">
-        <GuessDisplayer :guess="guess" :answer="wordOfTheDay" />
+      <li v-for="(guess, index) in guessesSubmitted" :key="`${index}-${guess.guess}`">
+        <GuessDisplayer :guess="guess.guess" :feedbacks="guess.feedback" />
       </li>
       <li class="w-full flex justify-center">
         <GuessInput
           :disabled="isGameOver"
-          @guess-submitted="(guess) => guessesSubmitted.push(guess)"
+          @guess-submitted="
+            (guess) =>
+              guessesSubmitted.push({
+                guess,
+                feedback: getGuessFeedback(guess, wordOfTheDay),
+              })
+          "
         />
       </li>
       <li v-for="i in emptyGuessesCount" :key="`remaining-guess${i}`">
         <GuessDisplayer />
       </li>
     </ul>
-    <CharaterHistory :guesses="guessesSubmitted" :answer="wordOfTheDay" />
+    <CharaterHistory :guesses="submittedGuesses" :key-feedbacks="keyFeedbacks" />
   </section>
   <div
     v-if="isGameOver && !manualClose"
     class="fixed flex flex-col items-center justify-center text-3xl sm:text-4xl leading-snug text-center bg-white/90 border rounded-3xl shadow-2xl w-[min(90vw,32rem)] min-h-64 px-6 py-10 top-1/2 left-1/2 -translate-1/2 z-10 animate-tada animate-duration-400"
   >
-    <p
-      data-test="eog-message"
-      v-text="guessesSubmitted.includes(wordOfTheDay) ? VICTORY_MESSAGE : DEFEAT_MESSAGE"
-    />
+    <p data-test="eog-message" v-text="isVictory ? VICTORY_MESSAGE : DEFEAT_MESSAGE" />
     <div v-if="isDefeat" class="text-lg" data-test="word-of-the-day">
       The word of the day was
       <span class="font-bold">

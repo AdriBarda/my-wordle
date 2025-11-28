@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { WORD_SIZE } from '@/settings'
 import { getFeedbackAtPosition } from '@/utils/feedback'
+import type { Feedback } from '@/utils/feedback'
 
 defineProps<{
   guess?: string
   answer?: string
+  feedbacks?: Feedback[]
 }>()
 </script>
 
@@ -18,8 +20,8 @@ defineProps<{
       <div
         class="inner w-full h-full relative transform-3d"
         :class="[
-          answer && 'animate-flip-vertical animate-duration-400',
-          answer &&
+          (feedbacks || answer) && 'animate-flip-vertical animate-duration-400',
+          (feedbacks || answer) &&
             [
               'animate-delay-0',
               'animate-delay-100',
@@ -32,7 +34,9 @@ defineProps<{
         <div class="face face-front">{{ char }}</div>
         <div
           :data-letter="char"
-          :data-letter-feedback="getFeedbackAtPosition(index, guess, answer)"
+          :data-letter-feedback="
+            feedbacks ? feedbacks[index] : getFeedbackAtPosition(index, guess, answer)
+          "
           :class="[
             'face face-back text-white',
             'data-[letter-feedback=correct]:bg-green-500',

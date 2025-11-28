@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { getKeyFeedback } from '@/utils/feedback'
 import { computed, ref, watch } from 'vue'
+import type { Feedback } from '@/utils/feedback'
 
 const props = defineProps<{
   guesses: string[]
-  answer: string
+  keyFeedbacks: Record<string, Feedback>
 }>()
 
 const alphabetCharacters = 'qwertyuiop|asdfghjkl|zxcvbnm'
@@ -16,6 +16,22 @@ const keyboardRows = alphabetCharacters
   .toUpperCase()
   .split('|')
   .map((row) => row.split(''))
+
+const keyboardData = computed(() =>
+  keyboardRows.map((row) =>
+    row.map((char) => {
+      const feedback: Feedback = visibleGuesses.value.length
+        ? props.keyFeedbacks[char] || null
+        : null
+
+      return {
+        char,
+        feedback,
+        animate: feedback === 'correct' || feedback === 'almost',
+      }
+    }),
+  ),
+)
 
 watch(
   () => props.guesses.length,
@@ -32,24 +48,18 @@ watch(
   <div class="w-full inline-flex">
     <div class="w-full max-w-4xl flex flex-col items-center gap-1.5">
       <div
-        v-for="(row, rowIndex) in keyboardRows"
+        v-for="(row, rowIndex) in keyboardData"
         :key="rowIndex"
         class="flex justify-center gap-1.5 w-full"
       >
         <div
-          v-for="char in row"
+          v-for="{ char, feedback, animate } in row"
           :key="char"
           keyboard-test="keyboard-key"
           :data-letter="char"
-          :data-letter-feedback="
-            visibleGuesses.length ? getKeyFeedback(char, visibleGuesses, answer) : null
-          "
+          :data-letter-feedback="feedback"
           :class="[
-            {
-              'animate-jelly animate-duration-400':
-                getKeyFeedback(char, visibleGuesses, answer) === 'correct' ||
-                getKeyFeedback(char, visibleGuesses, answer) === 'almost',
-            },
+            { 'animate-jelly animate-duration-400': animate },
             'key bg-gray-300',
             'data-[letter-feedback=correct]:bg-green-500',
             'data-[letter-feedback=almost]:bg-yellow-500',
