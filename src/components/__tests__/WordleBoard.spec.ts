@@ -221,7 +221,7 @@ describe('WordleBoard', () => {
       position: 2,
       expectedFeedback: 'incorrect',
       reason:
-        "P exists in both words, exists only once in 'PLANT' and it's already marked as correct in position '1' of 'PLANT'",
+        "P exists in both words, exists only once in 'PLANT' and it's already marked as correct in position '0' of 'PLANT'",
     },
     {
       position: 3,
