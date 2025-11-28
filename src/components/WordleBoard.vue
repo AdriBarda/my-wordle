@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE } from '@/settings'
+import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE, WORD_SIZE } from '@/settings'
 import englishWords from '@/englishWordsWith5Letters.json'
 import { computed, ref, watch } from 'vue'
 import GuessInput from './GuessInput.vue'
@@ -19,6 +19,8 @@ const props = defineProps({
 })
 
 const guessesSubmitted = ref<GuessFeedbackEntry[]>([])
+const guessInProgress = ref('')
+const invalidGuess = ref(false)
 
 const manualClose = ref(false)
 
@@ -119,6 +121,46 @@ const keyFeedbacks = computed<Record<string, Feedback>>(() => {
 
   return feedbacks
 })
+
+const flashInvalid = () => {
+  invalidGuess.value = true
+  setTimeout(() => (invalidGuess.value = false), 500)
+}
+
+const submitGuess = () => {
+  if (isGameOver.value) return
+
+  const candidate = guessInProgress.value
+  if (candidate.length !== WORD_SIZE || !englishWords.includes(candidate)) {
+    flashInvalid()
+    return
+  }
+
+  guessesSubmitted.value.push({
+    guess: candidate,
+    feedback: getGuessFeedback(candidate, props.wordOfTheDay),
+  })
+
+  guessInProgress.value = ''
+}
+
+const handleKeyboardAction = (event: {
+  char: string
+  action: string | null
+  feedback: Feedback
+  animate: boolean
+}) => {
+  if (isGameOver.value) return
+  const isLetter = /^[A-Z]$/
+  if (isLetter.test(event.char) && guessInProgress.value.length < WORD_SIZE) {
+    guessInProgress.value = guessInProgress.value.concat(event.char)
+  } else {
+    if (event.action === 'delete' && guessInProgress.value.length > 0) {
+      guessInProgress.value = guessInProgress.value.slice(0, guessInProgress.value.length - 1)
+    }
+    if (event.action === 'submit') submitGuess()
+  }
+}
 </script>
 
 <template>
@@ -130,21 +172,22 @@ const keyFeedbacks = computed<Record<string, Feedback>>(() => {
       </li>
       <li class="w-full flex justify-center">
         <GuessInput
+          v-model="guessInProgress"
           :disabled="isGameOver"
-          @guess-submitted="
-            (guess) =>
-              guessesSubmitted.push({
-                guess,
-                feedback: getGuessFeedback(guess, wordOfTheDay),
-              })
-          "
+          :invalid="invalidGuess"
+          @submit="submitGuess"
         />
       </li>
       <li v-for="i in emptyGuessesCount" :key="`remaining-guess${i}`">
         <GuessDisplayer />
       </li>
     </ul>
-    <CharaterHistory :guesses="submittedGuesses" :key-feedbacks="keyFeedbacks" />
+    <CharaterHistory
+      :guesses="submittedGuesses"
+      :key-feedbacks="keyFeedbacks"
+      :disabled="isGameOver"
+      @char-submitted="($event) => handleKeyboardAction($event)"
+    />
   </section>
   <div
     v-if="isGameOver && !manualClose"

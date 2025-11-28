@@ -5,10 +5,40 @@ import type { Feedback } from '@/utils/feedback'
 const props = defineProps<{
   guesses: string[]
   keyFeedbacks: Record<string, Feedback>
+  disabled?: boolean
+}>()
+
+const emit = defineEmits<{
+  'char-submitted': [
+    event: {
+      char: string
+      action: string | null
+      feedback: Feedback
+      animate: boolean
+    },
+  ]
 }>()
 
 const alphabetCharacters = 'qwertyuiop|asdfghjkl|zxcvbnm'
 const revealedGuessCount = ref(0)
+
+const handleOnClick = ({
+  char,
+  action,
+  feedback,
+  animate,
+}: {
+  char: string
+  action: string | null
+  feedback: Feedback
+  animate: boolean
+}) => {
+  if (!action) {
+    emit('char-submitted', { char, action, feedback, animate })
+  } else {
+    emit('char-submitted', { char, action, feedback, animate })
+  }
+}
 
 const visibleGuesses = computed(() => props.guesses.slice(0, revealedGuessCount.value))
 
@@ -28,6 +58,7 @@ const keyboardData = computed(() =>
       if (!isLetter.test(char)) {
         return {
           char,
+          action: char === '⏎' ? 'submit' : 'delete',
           feedback: null,
           animate: false,
         }
@@ -38,6 +69,7 @@ const keyboardData = computed(() =>
 
       return {
         char,
+        action: null,
         feedback,
         animate: feedback === 'correct' || feedback === 'almost',
       }
@@ -64,8 +96,8 @@ watch(
         :key="rowIndex"
         class="flex justify-center gap-1 sm:gap-1 w-full"
       >
-        <div
-          v-for="{ char, feedback, animate } in row"
+        <button
+          v-for="{ char, action, feedback, animate } in row"
           :key="char"
           keyboard-test="keyboard-key"
           :data-letter="char"
@@ -78,9 +110,11 @@ watch(
             'data-[letter-feedback=almost]:bg-yellow-500',
             'data-[letter-feedback=incorrect]:bg-gray-500',
           ]"
+          :disabled="disabled"
+          @click="handleOnClick({ char, action, feedback, animate })"
         >
           {{ char }}
-        </div>
+        </button>
       </div>
     </div>
   </div>
@@ -90,6 +124,6 @@ watch(
 @import 'tailwindcss';
 
 .key {
-  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-base sm:min-w-12 sm:min-h-16 sm:text-xl;
+  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-base sm:min-w-12 sm:min-h-16 sm:text-xl cursor-pointer;
 }
 </style>

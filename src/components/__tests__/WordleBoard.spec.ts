@@ -253,19 +253,99 @@ describe('WordleBoard', () => {
       })
     },
   )
+  describe('on-screen keyboard', () => {
+    test('A keyboard with all english alphabet characters renders on screen', async () => {
+      const keyboardChars = 'qwertyuiopasdfghjkl⏎zxcvbnm⌫'
 
-  test('A keyboard with all english alphabet characters renders on screen', async () => {
-    const keyboardChars = 'qwertyuiopasdfghjkl⏎zxcvbnm⌫'
+      const keyboardCharsList = keyboardChars.toUpperCase().split('')
 
-    const keyboardCharsList = keyboardChars.toUpperCase().split('')
+      const keyboardKeys = wrapper.findAll('[keyboard-test="keyboard-key"]')
 
-    const keyboardKeys = wrapper.findAll('[keyboard-test="keyboard-key"]')
+      expect(keyboardKeys).toHaveLength(keyboardCharsList.length)
 
-    expect(keyboardKeys).toHaveLength(keyboardCharsList.length)
+      keyboardKeys.forEach((keyWrapper, i) => {
+        const renderedKey = keyWrapper.text()
+        expect(renderedKey).toBe(keyboardCharsList[i])
+      })
+    })
 
-    keyboardKeys.forEach((keyWrapper, i) => {
-      const renderedKey = keyWrapper.text()
-      expect(renderedKey).toBe(keyboardCharsList[i])
+    test('all keys in on-screen keyboard are clickable', async () => {
+      const keyboardKeys = wrapper.findAll('[keyboard-test="keyboard-key"]')
+
+      expect(keyboardKeys.length).toBeGreaterThan(0)
+
+      const firstRowLetters = keyboardKeys.slice(0, WORD_SIZE)
+
+      for (const keyWrapper of firstRowLetters) {
+        const keyChar = keyWrapper.text()
+
+        await keyWrapper.trigger('click')
+        await nextTick()
+        const inputValue = wrapper.find<HTMLInputElement>('input[type=text]').element.value
+        expect(inputValue.endsWith(keyChar)).toBe(true)
+      }
+    })
+
+    test('backspace removes the last character typed from on-screen keyboard', async () => {
+      const inputSelector = 'input[type=text]'
+      const keys = wrapper.findAll('[keyboard-test="keyboard-key"]')
+      const getKey = (char: string) => keys.find((key) => key.text() === char)!
+
+      await getKey('A')?.trigger('click')
+      await getKey('B')?.trigger('click')
+      await nextTick()
+      expect(wrapper.find<HTMLInputElement>(inputSelector).element.value).toBe('AB')
+
+      await getKey('⌫')?.trigger('click')
+      await nextTick()
+      expect(wrapper.find<HTMLInputElement>(inputSelector).element.value).toBe('A')
+    })
+
+    test('submit key sends a valid guess typed via on-screen keyboard', async () => {
+      const inputSelector = 'input[type=text]'
+      const keys = wrapper.findAll('[keyboard-test="keyboard-key"]')
+      const getKey = (char: string) => keys.find((key) => key.text() === char)!
+
+      for (const char of wordOfTheDay) {
+        await getKey(char)?.trigger('click')
+      }
+      await getKey('⏎')?.trigger('click')
+      await nextTick()
+
+      const rows = wrapper.findAll('[data-test="guess-row"]')
+      const submittedWords = rows
+        .map((row) => row.findAll('.face-front').map((f) => f.text()).join(''))
+        .filter((word) => word.trim().length)
+
+      expect(submittedWords.at(-1)).toBe(wordOfTheDay)
+      expect(wrapper.find<HTMLInputElement>(inputSelector).element.value).toBe('')
+    })
+
+    test('on-screen keyboard ignores extra letters beyond word size', async () => {
+      const inputSelector = 'input[type=text]'
+      const keys = wrapper.findAll('[keyboard-test="keyboard-key"]')
+
+      const letterKeys = keys.filter((key) => /^[A-Z]$/.test(key.text()))
+      for (let i = 0; i < WORD_SIZE + 2; i++) {
+        await letterKeys[i % letterKeys.length]?.trigger('click')
+      }
+      await nextTick()
+
+      expect(wrapper.find<HTMLInputElement>(inputSelector).element.value.length).toBe(WORD_SIZE)
+    })
+
+    test('on-screen keyboard does nothing when game is over', async () => {
+      await playerTypesAndSubmitsGuess(wordOfTheDay)
+      await nextTick()
+
+      const inputSelector = 'input[type=text]'
+      const initialValue = wrapper.find<HTMLInputElement>(inputSelector).element.value
+
+      const keyboardKeys = wrapper.findAll('[keyboard-test="keyboard-key"]')
+      await keyboardKeys.find((key) => key.text() === 'A')?.trigger('click')
+      await nextTick()
+
+      expect(wrapper.find<HTMLInputElement>(inputSelector).element.value).toBe(initialValue)
     })
   })
 })
