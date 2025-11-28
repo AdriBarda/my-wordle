@@ -255,17 +255,17 @@ describe('WordleBoard', () => {
   )
 
   test('A keyboard with all english alphabet characters renders on screen', async () => {
-    const alphabet = 'qwertyuiopasdfghjklzxcvbnm'
+    const keyboardChars = 'qwertyuiopasdfghjkl⏎zxcvbnm⌫'
 
-    const alphabetList = alphabet.toUpperCase().split('')
+    const keyboardCharsList = keyboardChars.toUpperCase().split('')
 
     const keyboardKeys = wrapper.findAll('[keyboard-test="keyboard-key"]')
 
-    expect(keyboardKeys).toHaveLength(alphabetList.length)
+    expect(keyboardKeys).toHaveLength(keyboardCharsList.length)
 
     keyboardKeys.forEach((keyWrapper, i) => {
       const renderedKey = keyWrapper.text()
-      expect(renderedKey).toBe(alphabetList[i])
+      expect(renderedKey).toBe(keyboardCharsList[i])
     })
   })
 })

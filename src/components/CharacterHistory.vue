@@ -17,9 +17,21 @@ const keyboardRows = alphabetCharacters
   .split('|')
   .map((row) => row.split(''))
 
+keyboardRows[2]?.unshift('⏎')
+keyboardRows[2]?.push('⌫')
+
+const isLetter = /^[A-Z]$/
+
 const keyboardData = computed(() =>
   keyboardRows.map((row) =>
     row.map((char) => {
+      if (!isLetter.test(char)) {
+        return {
+          char,
+          feedback: null,
+          animate: false,
+        }
+      }
       const feedback: Feedback = visibleGuesses.value.length
         ? props.keyFeedbacks[char] || null
         : null
@@ -60,6 +72,7 @@ watch(
           :data-letter-feedback="feedback"
           :class="[
             { 'animate-jelly animate-duration-400': animate },
+            { 'min-w-12! sm:min-w-16!': !isLetter.test(char) },
             'key bg-gray-300',
             'data-[letter-feedback=correct]:bg-green-500',
             'data-[letter-feedback=almost]:bg-yellow-500',
