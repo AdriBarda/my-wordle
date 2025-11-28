@@ -45,12 +45,12 @@ watch(
 )
 </script>
 <template>
-  <div class="w-full inline-flex">
-    <div class="w-full max-w-4xl flex flex-col items-center gap-1.5">
+  <div class="w-full flex px-2 sm:px-4">
+    <div class="w-full max-w-4xl flex flex-col items-center gap-1">
       <div
         v-for="(row, rowIndex) in keyboardData"
         :key="rowIndex"
-        class="flex justify-center gap-1.5 w-full"
+        class="flex justify-center gap-1 sm:gap-1 w-full"
       >
         <div
           v-for="{ char, feedback, animate } in row"
@@ -77,6 +77,6 @@ watch(
 @import 'tailwindcss';
 
 .key {
-  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-lg sm:w-12 sm:h-16 sm:text-xl;
+  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-base sm:min-w-12 sm:min-h-16 sm:text-xl;
 }
 </style>
