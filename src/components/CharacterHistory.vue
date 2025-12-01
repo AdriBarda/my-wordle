@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { Feedback, KeyboardKey, KeyboardAction } from '@/types'
+import { isLetter } from '@/utils/validations'
 
 const props = defineProps<{
   guesses: string[]
@@ -30,12 +31,10 @@ const keyboardRows = alphabetCharacters
 keyboardRows[2]?.unshift('⏎')
 keyboardRows[2]?.push('⌫')
 
-const isLetter = /^[A-Z]$/
-
 const keyboardData = computed(() =>
   keyboardRows.map((row) =>
     row.map((char) => {
-      if (!isLetter.test(char)) {
+      if (!isLetter(char)) {
         return {
           char,
           action: (char === '⏎' ? 'submit' : 'delete') as KeyboardAction,
@@ -92,7 +91,7 @@ watch(
             {
               'animate-jelly animate-duration-400': animate,
             },
-            { 'min-w-12! sm:min-w-16!': !isLetter.test(char) },
+            { 'min-w-12! sm:min-w-16!': !isLetter(char) },
             'key bg-gray-300',
             'data-[letter-feedback=correct]:bg-green-500',
             'data-[letter-feedback=almost]:bg-yellow-500',
@@ -112,6 +111,6 @@ watch(
 @import 'tailwindcss';
 
 .key {
-  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-base sm:min-w-12 sm:min-h-16 sm:text-xl cursor-pointer;
+  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-base sm:min-w-12 sm:min-h-16 sm:text-xl cursor-pointer disabled:cursor-default;
 }
 </style>

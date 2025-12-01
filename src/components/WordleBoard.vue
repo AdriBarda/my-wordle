@@ -9,6 +9,7 @@ import { throwConfetti } from '@/utils/throwConfetti'
 import { type Origin } from 'canvas-confetti'
 import { getGuessFeedback, getKeyFeedback } from '@/utils/feedback'
 import type { Feedback, GuessFeedbackEntry, KeyboardKey } from '@/types'
+import { isLetter } from '@/utils/validations'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -146,8 +147,7 @@ const submitGuess = () => {
 
 const handleKeyboardAction = (event: KeyboardKey) => {
   if (isGameOver.value) return
-  const isLetter = /^[A-Z]$/
-  if (isLetter.test(event.char) && guessInProgress.value.length < WORD_SIZE) {
+  if (isLetter(event.char) && guessInProgress.value.length < WORD_SIZE) {
     guessInProgress.value = guessInProgress.value.concat(event.char)
   } else {
     if (event.action === 'delete' && guessInProgress.value.length > 0) {
