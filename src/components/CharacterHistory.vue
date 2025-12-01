@@ -14,10 +14,13 @@ const emit = defineEmits<{
 
 const alphabetCharacters = 'qwertyuiop|asdfghjkl|zxcvbnm'
 const revealedGuessCount = ref(0)
+const guessesRevealed = computed(() => revealedGuessCount.value === props.guesses.length)
+const lastStableKeyFeedbacks = ref<Record<string, Feedback>>({})
 
 const handleOnClick = (key: KeyboardKey) => emit('char-submitted', key)
 
 const visibleGuesses = computed(() => props.guesses.slice(0, revealedGuessCount.value))
+const shouldShowFeedback = computed(() => guessesRevealed.value && visibleGuesses.value.length > 0)
 
 const keyboardRows = alphabetCharacters
   .toUpperCase()
@@ -40,15 +43,18 @@ const keyboardData = computed(() =>
           animate: false,
         }
       }
-      const feedback: Feedback = visibleGuesses.value.length
-        ? props.keyFeedbacks[char] || null
-        : null
+      const stableFeedback = lastStableKeyFeedbacks.value[char] || null
+      const feedback: Feedback = shouldShowFeedback.value
+        ? props.keyFeedbacks[char] || stableFeedback
+        : stableFeedback
+      const canAnimate =
+        feedback !== stableFeedback && (feedback === 'correct' || feedback === 'almost')
 
       return {
         char,
         action: null,
         feedback,
-        animate: feedback === 'correct' || feedback === 'almost',
+        animate: guessesRevealed.value && canAnimate,
       }
     }),
   ),
@@ -60,6 +66,9 @@ watch(
     if (newLength > oldLength) {
       setTimeout(() => {
         revealedGuessCount.value = newLength
+        setTimeout(() => {
+          lastStableKeyFeedbacks.value = { ...props.keyFeedbacks }
+        }, 450)
       }, 750)
     }
   },
@@ -80,7 +89,9 @@ watch(
           :data-letter="char"
           :data-letter-feedback="feedback"
           :class="[
-            { 'animate-jelly animate-duration-400': animate },
+            {
+              'animate-jelly animate-duration-400': animate,
+            },
             { 'min-w-12! sm:min-w-16!': !isLetter.test(char) },
             'key bg-gray-300',
             'data-[letter-feedback=correct]:bg-green-500',

@@ -8,7 +8,7 @@ import CharaterHistory from './CharacterHistory.vue'
 import { throwConfetti } from '@/utils/throwConfetti'
 import { type Origin } from 'canvas-confetti'
 import { getGuessFeedback, getKeyFeedback } from '@/utils/feedback'
-import type { Feedback, GuessFeedbackEntry } from '@/types'
+import type { Feedback, GuessFeedbackEntry, KeyboardKey } from '@/types'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -144,12 +144,7 @@ const submitGuess = () => {
   guessInProgress.value = ''
 }
 
-const handleKeyboardAction = (event: {
-  char: string
-  action: string | null
-  feedback: Feedback
-  animate: boolean
-}) => {
+const handleKeyboardAction = (event: KeyboardKey) => {
   if (isGameOver.value) return
   const isLetter = /^[A-Z]$/
   if (isLetter.test(event.char) && guessInProgress.value.length < WORD_SIZE) {
@@ -186,7 +181,7 @@ const handleKeyboardAction = (event: {
       :guesses="submittedGuesses"
       :key-feedbacks="keyFeedbacks"
       :disabled="isGameOver"
-      @char-submitted="($event) => handleKeyboardAction($event)"
+      @char-submitted="handleKeyboardAction"
     />
   </section>
   <div
