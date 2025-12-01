@@ -103,7 +103,7 @@ watch(isVictory, () => throwRealisticConfetti({ y: 0.9 }))
 const emptyGuessesCount = computed(() => {
   const remainingGuesses = MAX_GUESSES_COUNT - guessesSubmitted.value.length
 
-  return isGameOver.value ? remainingGuesses : remainingGuesses - 1
+  return Math.max(remainingGuesses - 1, 0)
 })
 
 const submittedGuesses = computed(() => guessesSubmitted.value.map(({ guess }) => guess))
@@ -178,6 +178,7 @@ const handleKeyboardAction = (event: KeyboardKey) => {
       </li>
       <li class="w-full flex justify-center">
         <GuessInput
+          v-if="!isGameOver"
           v-model="guessInProgress"
           :disabled="isGameOver"
           :invalid="invalidGuess"
