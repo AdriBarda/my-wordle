@@ -15,7 +15,7 @@ defineProps<{
     <li
       v-for="(char, index) in guess?.padEnd(WORD_SIZE, ' ') || new Array(5)"
       :key="index"
-      class="w-16 h-16 perspective-midrange"
+      class="w-12 h-12 sm:w-16 sm:h-16 perspective-midrange"
     >
       <div
         class="inner w-full h-full relative transform-3d"

@@ -1,33 +1,63 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import type { Feedback } from '@/utils/feedback'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import type { Feedback, KeyboardKey, KeyboardAction } from '@/types'
+import { isLetter } from '@/utils/validations'
 
 const props = defineProps<{
   guesses: string[]
   keyFeedbacks: Record<string, Feedback>
+  disabled?: boolean
+}>()
+
+const emit = defineEmits<{
+  'char-submitted': [event: KeyboardKey]
 }>()
 
 const alphabetCharacters = 'qwertyuiop|asdfghjkl|zxcvbnm'
+
 const revealedGuessCount = ref(0)
+const revealTimeoutId = ref<number | null>(null)
+const stableTimeoutId = ref<number | null>(null)
+
+const guessesRevealed = computed(() => revealedGuessCount.value === props.guesses.length)
+const lastStableKeyFeedbacks = ref<Record<string, Feedback>>({})
+
+const handleOnClick = (key: KeyboardKey) => emit('char-submitted', key)
 
 const visibleGuesses = computed(() => props.guesses.slice(0, revealedGuessCount.value))
+const shouldShowFeedback = computed(() => guessesRevealed.value && visibleGuesses.value.length > 0)
 
 const keyboardRows = alphabetCharacters
   .toUpperCase()
   .split('|')
   .map((row) => row.split(''))
 
+keyboardRows[2]?.unshift('⏎')
+keyboardRows[2]?.push('⌫')
+
 const keyboardData = computed(() =>
   keyboardRows.map((row) =>
     row.map((char) => {
-      const feedback: Feedback = visibleGuesses.value.length
-        ? props.keyFeedbacks[char] || null
-        : null
+      if (!isLetter(char)) {
+        return {
+          char,
+          action: (char === '⏎' ? 'submit' : 'delete') as KeyboardAction,
+          feedback: null,
+          animate: false,
+        }
+      }
+      const stableFeedback = lastStableKeyFeedbacks.value[char] || null
+      const feedback: Feedback = shouldShowFeedback.value
+        ? props.keyFeedbacks[char] || stableFeedback
+        : stableFeedback
+      const canAnimate =
+        feedback !== stableFeedback && (feedback === 'correct' || feedback === 'almost')
 
       return {
         char,
+        action: null,
         feedback,
-        animate: feedback === 'correct' || feedback === 'almost',
+        animate: guessesRevealed.value && canAnimate,
       }
     }),
   ),
@@ -37,37 +67,54 @@ watch(
   () => props.guesses.length,
   (newLength, oldLength) => {
     if (newLength > oldLength) {
-      setTimeout(() => {
+      if (revealTimeoutId.value !== null) clearTimeout(revealTimeoutId.value)
+      if (stableTimeoutId.value !== null) clearTimeout(stableTimeoutId.value)
+      revealTimeoutId.value = setTimeout(() => {
         revealedGuessCount.value = newLength
+        revealTimeoutId.value = null
+        stableTimeoutId.value = setTimeout(() => {
+          lastStableKeyFeedbacks.value = { ...props.keyFeedbacks }
+          stableTimeoutId.value = null
+        }, 450)
       }, 750)
     }
   },
 )
+
+onBeforeUnmount(() => {
+  if (revealTimeoutId.value !== null) clearTimeout(revealTimeoutId.value)
+  if (stableTimeoutId.value !== null) clearTimeout(stableTimeoutId.value)
+})
 </script>
 <template>
-  <div class="w-full inline-flex">
-    <div class="w-full max-w-4xl flex flex-col items-center gap-1.5">
+  <div class="w-full flex px-2 sm:px-4">
+    <div class="w-full max-w-4xl flex flex-col items-center gap-1">
       <div
         v-for="(row, rowIndex) in keyboardData"
         :key="rowIndex"
-        class="flex justify-center gap-1.5 w-full"
+        class="flex justify-center gap-1 sm:gap-1 w-full"
       >
-        <div
-          v-for="{ char, feedback, animate } in row"
+        <button
+          v-for="{ char, action, feedback, animate } in row"
           :key="char"
           keyboard-test="keyboard-key"
           :data-letter="char"
           :data-letter-feedback="feedback"
           :class="[
-            { 'animate-jelly animate-duration-400': animate },
+            {
+              'animate-jelly animate-duration-400': animate,
+            },
+            { 'min-w-12! sm:min-w-16!': !isLetter(char) },
             'key bg-gray-300',
             'data-[letter-feedback=correct]:bg-green-500',
             'data-[letter-feedback=almost]:bg-yellow-500',
             'data-[letter-feedback=incorrect]:bg-gray-500',
           ]"
+          :disabled="disabled"
+          @click="handleOnClick({ char, action, feedback, animate })"
         >
           {{ char }}
-        </div>
+        </button>
       </div>
     </div>
   </div>
@@ -77,6 +124,6 @@ watch(
 @import 'tailwindcss';
 
 .key {
-  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-lg sm:w-12 sm:h-16 sm:text-xl;
+  @apply flex justify-center items-center rounded select-none text-white font-semibold min-w-8 min-h-11 text-base sm:min-w-12 sm:min-h-16 sm:text-xl cursor-pointer disabled:cursor-default;
 }
 </style>

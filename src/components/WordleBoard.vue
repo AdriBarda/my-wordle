@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE } from '@/settings'
+import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE, WORD_SIZE } from '@/settings'
 import englishWords from '@/englishWordsWith5Letters.json'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import GuessInput from './GuessInput.vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 import CharaterHistory from './CharacterHistory.vue'
 import { throwConfetti } from '@/utils/throwConfetti'
 import { type Origin } from 'canvas-confetti'
-import { getGuessFeedback, getKeyFeedback, type GuessFeedbackEntry } from '@/utils/feedback'
-import type { Feedback } from '@/utils/feedback'
+import { getGuessFeedback, getKeyFeedback } from '@/utils/feedback'
+import type { Feedback, GuessFeedbackEntry, KeyboardKey } from '@/types'
+import { isLetter } from '@/utils/validations'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -19,8 +20,12 @@ const props = defineProps({
 })
 
 const guessesSubmitted = ref<GuessFeedbackEntry[]>([])
+const guessInProgress = ref('')
+const invalidGuess = ref(false)
 
 const manualClose = ref(false)
+
+const flashTimeoutId = ref<number | null>(null)
 
 const isVictory = computed(() =>
   guessesSubmitted.value.some((entry) => entry.guess === props.wordOfTheDay),
@@ -98,7 +103,7 @@ watch(isVictory, () => throwRealisticConfetti({ y: 0.9 }))
 const emptyGuessesCount = computed(() => {
   const remainingGuesses = MAX_GUESSES_COUNT - guessesSubmitted.value.length
 
-  return isGameOver.value ? remainingGuesses : remainingGuesses - 1
+  return Math.max(remainingGuesses - 1, 0)
 })
 
 const submittedGuesses = computed(() => guessesSubmitted.value.map(({ guess }) => guess))
@@ -119,6 +124,49 @@ const keyFeedbacks = computed<Record<string, Feedback>>(() => {
 
   return feedbacks
 })
+
+const flashInvalid = () => {
+  if (flashTimeoutId.value !== null) clearTimeout(flashTimeoutId.value)
+
+  invalidGuess.value = true
+  flashTimeoutId.value = setTimeout(() => {
+    invalidGuess.value = false
+    flashTimeoutId.value = null
+  }, 500)
+}
+
+onBeforeUnmount(() => {
+  if (flashTimeoutId.value !== null) clearTimeout(flashTimeoutId.value)
+})
+
+const submitGuess = () => {
+  if (isGameOver.value) return
+
+  const candidate = guessInProgress.value
+  if (candidate.length !== WORD_SIZE || !englishWords.includes(candidate)) {
+    flashInvalid()
+    return
+  }
+
+  guessesSubmitted.value.push({
+    guess: candidate,
+    feedback: getGuessFeedback(candidate, props.wordOfTheDay),
+  })
+
+  guessInProgress.value = ''
+}
+
+const handleKeyboardAction = (event: KeyboardKey) => {
+  if (isGameOver.value) return
+  if (isLetter(event.char) && guessInProgress.value.length < WORD_SIZE) {
+    guessInProgress.value = guessInProgress.value.concat(event.char)
+  } else {
+    if (event.action === 'delete' && guessInProgress.value.length > 0) {
+      guessInProgress.value = guessInProgress.value.slice(0, -1)
+    }
+    if (event.action === 'submit') submitGuess()
+  }
+}
 </script>
 
 <template>
@@ -130,21 +178,23 @@ const keyFeedbacks = computed<Record<string, Feedback>>(() => {
       </li>
       <li class="w-full flex justify-center">
         <GuessInput
+          v-if="!isGameOver"
+          v-model="guessInProgress"
           :disabled="isGameOver"
-          @guess-submitted="
-            (guess) =>
-              guessesSubmitted.push({
-                guess,
-                feedback: getGuessFeedback(guess, wordOfTheDay),
-              })
-          "
+          :invalid="invalidGuess"
+          @submit="submitGuess"
         />
       </li>
       <li v-for="i in emptyGuessesCount" :key="`remaining-guess${i}`">
         <GuessDisplayer />
       </li>
     </ul>
-    <CharaterHistory :guesses="submittedGuesses" :key-feedbacks="keyFeedbacks" />
+    <CharaterHistory
+      :guesses="submittedGuesses"
+      :key-feedbacks="keyFeedbacks"
+      :disabled="isGameOver"
+      @char-submitted="handleKeyboardAction"
+    />
   </section>
   <div
     v-if="isGameOver && !manualClose"

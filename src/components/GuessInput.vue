@@ -1,60 +1,67 @@
 <script setup lang="ts">
 import { WORD_SIZE } from '@/settings'
-import englishWords from '@/englishWordsWith5Letters.json'
-import { ref, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 
-const { disabled = false } = defineProps<{ disabled?: boolean }>()
-
-const guessInProgress = ref('')
-const guessIsInvalid = ref(false)
-
-const emit = defineEmits<{
-  'guess-submitted': [guess: string]
+const props = defineProps<{
+  modelValue: string
+  disabled?: boolean
+  invalid?: boolean
 }>()
 
-const sanitise = (value: string) => {
-  return value
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+  submit: []
+}>()
+
+const guessIsInvalid = ref(false)
+
+const sanitise = (value: string) =>
+  value
     .slice(0, WORD_SIZE)
     .toUpperCase()
     .replace(/[^A-Z]/g, '')
-}
-watch(guessInProgress, (raw) => {
-  const clean = sanitise(raw)
-  if (clean !== raw) {
-    guessInProgress.value = clean
-  }
-})
 
-const onSubmit = () => {
-  if (!englishWords.includes(guessInProgress.value)) {
-    if (guessInProgress.value) guessIsInvalid.value = true
-    setTimeout(() => {
-      guessIsInvalid.value = false
-    }, 500)
-    return
-  }
+const guess = computed(() => props.modelValue ?? '')
 
-  emit('guess-submitted', guessInProgress.value)
-  guessInProgress.value = ''
+const onInput = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const clean = sanitise(target.value)
+  if (clean !== target.value) {
+    target.value = clean
+  }
+  emit('update:modelValue', clean)
 }
+
+watch(
+  () => props.invalid,
+  (flag) => {
+    if (flag) {
+      guessIsInvalid.value = true
+      setTimeout(() => (guessIsInvalid.value = false), 500)
+    }
+  },
+)
+
+const onSubmit = () => emit('submit')
 </script>
 <template>
   <section>
     <GuessDisplayer
       v-if="!disabled"
-      :guess="guessInProgress"
+      :guess="guess"
       :class="{ 'animate-shake animate-duration-250': guessIsInvalid }"
     />
     <input
       type="text"
-      v-model="guessInProgress"
+      :value="guess"
       class="opacity-0 absolute -z-10"
       :maxlength="WORD_SIZE"
       autofocus
       :disabled="disabled"
+      @input="onInput"
       @blur="({ target }) => (target as HTMLInputElement).focus()"
-      @keydown.enter="onSubmit"
+      @keydown.enter.prevent="onSubmit"
     />
   </section>
 </template>
