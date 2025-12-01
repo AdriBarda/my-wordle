@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { Feedback, KeyboardKey, KeyboardAction } from '@/types'
 import { isLetter } from '@/utils/validations'
 
@@ -14,7 +14,11 @@ const emit = defineEmits<{
 }>()
 
 const alphabetCharacters = 'qwertyuiop|asdfghjkl|zxcvbnm'
+
 const revealedGuessCount = ref(0)
+const revealTimeoutId = ref<number | null>(null)
+const stableTimeoutId = ref<number | null>(null)
+
 const guessesRevealed = computed(() => revealedGuessCount.value === props.guesses.length)
 const lastStableKeyFeedbacks = ref<Record<string, Feedback>>({})
 
@@ -63,15 +67,24 @@ watch(
   () => props.guesses.length,
   (newLength, oldLength) => {
     if (newLength > oldLength) {
-      setTimeout(() => {
+      if (revealTimeoutId.value !== null) clearTimeout(revealTimeoutId.value)
+      if (stableTimeoutId.value !== null) clearTimeout(stableTimeoutId.value)
+      revealTimeoutId.value = setTimeout(() => {
         revealedGuessCount.value = newLength
-        setTimeout(() => {
+        revealTimeoutId.value = null
+        stableTimeoutId.value = setTimeout(() => {
           lastStableKeyFeedbacks.value = { ...props.keyFeedbacks }
+          stableTimeoutId.value = null
         }, 450)
       }, 750)
     }
   },
 )
+
+onBeforeUnmount(() => {
+  if (revealTimeoutId.value !== null) clearTimeout(revealTimeoutId.value)
+  if (stableTimeoutId.value !== null) clearTimeout(stableTimeoutId.value)
+})
 </script>
 <template>
   <div class="w-full flex px-2 sm:px-4">

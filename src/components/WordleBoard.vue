@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { DEFEAT_MESSAGE, MAX_GUESSES_COUNT, VICTORY_MESSAGE, WORD_SIZE } from '@/settings'
 import englishWords from '@/englishWordsWith5Letters.json'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import GuessInput from './GuessInput.vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 import CharaterHistory from './CharacterHistory.vue'
@@ -24,6 +24,8 @@ const guessInProgress = ref('')
 const invalidGuess = ref(false)
 
 const manualClose = ref(false)
+
+const flashTimeoutId = ref<number | null>(null)
 
 const isVictory = computed(() =>
   guessesSubmitted.value.some((entry) => entry.guess === props.wordOfTheDay),
@@ -124,9 +126,18 @@ const keyFeedbacks = computed<Record<string, Feedback>>(() => {
 })
 
 const flashInvalid = () => {
+  if (flashTimeoutId.value !== null) clearTimeout(flashTimeoutId.value)
+
   invalidGuess.value = true
-  setTimeout(() => (invalidGuess.value = false), 500)
+  flashTimeoutId.value = setTimeout(() => {
+    invalidGuess.value = false
+    flashTimeoutId.value = null
+  }, 500)
 }
+
+onBeforeUnmount(() => {
+  if (flashTimeoutId.value !== null) clearTimeout(flashTimeoutId.value)
+})
 
 const submitGuess = () => {
   if (isGameOver.value) return
@@ -151,7 +162,7 @@ const handleKeyboardAction = (event: KeyboardKey) => {
     guessInProgress.value = guessInProgress.value.concat(event.char)
   } else {
     if (event.action === 'delete' && guessInProgress.value.length > 0) {
-      guessInProgress.value = guessInProgress.value.slice(0, guessInProgress.value.length - 1)
+      guessInProgress.value = guessInProgress.value.slice(0, -1)
     }
     if (event.action === 'submit') submitGuess()
   }
