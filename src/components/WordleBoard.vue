@@ -21,7 +21,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits<{
-  'play-again': [void]
+  'play-again': []
 }>()
 
 const guessesSubmitted = ref<GuessFeedbackEntry[]>([])
