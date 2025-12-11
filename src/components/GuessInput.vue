@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { WORD_SIZE } from '@/settings'
-import { computed, watch, ref, onMounted, nextTick } from 'vue'
+import { computed, watch, ref, nextTick } from 'vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 
 const props = defineProps<{
@@ -55,10 +55,6 @@ watch(
   { immediate: true },
 )
 
-onMounted(() => {
-  nextTick(() => inputRef.value?.focus())
-})
-
 const onSubmit = () => emit('submit')
 </script>
 <template>
@@ -74,8 +70,8 @@ const onSubmit = () => emit('submit')
       :value="guess"
       class="opacity-0 absolute -z-10"
       :maxlength="WORD_SIZE"
-      autofocus
       :disabled="disabled"
+      autofocus
       @input="onInput"
       @keydown.enter.prevent="onSubmit"
     />

@@ -125,7 +125,11 @@ const throwRealisticConfetti = (origin: Origin = { y: 0.7 }) => {
   )
 }
 
-watch(isVictory, () => throwRealisticConfetti({ y: 0.9 }))
+watch(isVictory, (newVal) => {
+  if (newVal) {
+    throwRealisticConfetti({ y: 0.9 })
+  }
+})
 
 const emptyGuessesCount = computed(() => {
   const remainingGuesses = MAX_GUESSES_COUNT - guessesSubmitted.value.length
