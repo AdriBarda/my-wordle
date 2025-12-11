@@ -10,6 +10,7 @@ import { type Origin } from 'canvas-confetti'
 import { getGuessFeedback, getKeyFeedback } from '@/utils/feedback'
 import type { Feedback, GuessFeedbackEntry, KeyboardKey } from '@/types'
 import { isLetter } from '@/utils/validations'
+import EndOfGameModal from './EndOfGameModal.vue'
 
 const props = defineProps({
   wordOfTheDay: {
@@ -19,13 +20,27 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits<{
+  'play-again': [void]
+}>()
+
 const guessesSubmitted = ref<GuessFeedbackEntry[]>([])
 const guessInProgress = ref('')
 const invalidGuess = ref(false)
 
-const manualClose = ref(false)
-
 const flashTimeoutId = ref<number | null>(null)
+
+const playAgain = () => {
+  guessesSubmitted.value = []
+  guessInProgress.value = ''
+  invalidGuess.value = false
+  if (flashTimeoutId.value !== null) {
+    clearTimeout(flashTimeoutId.value)
+    flashTimeoutId.value = null
+  }
+  endOfGameModal.value?.close()
+  emit('play-again')
+}
 
 const isVictory = computed(() =>
   guessesSubmitted.value.some((entry) => entry.guess === props.wordOfTheDay),
@@ -36,6 +51,18 @@ const isDefeat = computed(
 )
 
 const isGameOver = computed(() => isVictory.value || isDefeat.value)
+
+watch(isGameOver, (newVal) => {
+  if (newVal) {
+    openEndOfGameModal()
+  }
+})
+
+const endOfGameModal = ref<InstanceType<typeof EndOfGameModal> | null>(null)
+
+const openEndOfGameModal = () => {
+  endOfGameModal.value?.open()
+}
 
 const throwRealisticConfetti = (origin: Origin = { y: 0.7 }) => {
   throwConfetti(
@@ -172,13 +199,28 @@ const handleKeyboardAction = (event: KeyboardKey) => {
 <template>
   <section class="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto px-4 pb-10 pt-2">
     <h1 class="text-3xl sm:text-5xl py-3 font-semibold font-mono">My Wordle Version</h1>
+    <div class="flex items-center gap-5">
+      <button
+        v-if="isGameOver"
+        class="py-1 px-3 bg-black text-white rounded-lg hover:bg-gray-900"
+        @click="playAgain"
+      >
+        Play Again
+      </button>
+      <button
+        v-if="isGameOver"
+        class="py-1 px-3 bg-white text-gray-800 rounded-lg hover:bg-gray-400 hover:text-gray-100 border border-black"
+        @click="openEndOfGameModal"
+      >
+        View Result
+      </button>
+    </div>
     <ul class="m-0 p-0 flex flex-col items-center gap-1 w-full">
       <li v-for="(guess, index) in guessesSubmitted" :key="`${index}-${guess.guess}`">
         <GuessDisplayer :guess="guess.guess" :feedbacks="guess.feedback" />
       </li>
       <li class="w-full flex justify-center">
         <GuessInput
-          v-if="!isGameOver"
           v-model="guessInProgress"
           :disabled="isGameOver"
           :invalid="invalidGuess"
@@ -196,17 +238,13 @@ const handleKeyboardAction = (event: KeyboardKey) => {
       @char-submitted="handleKeyboardAction"
     />
   </section>
-  <div
-    v-if="isGameOver && !manualClose"
-    class="fixed flex flex-col items-center justify-center text-3xl sm:text-4xl leading-snug text-center bg-white/90 border rounded-3xl shadow-2xl w-[min(90vw,32rem)] min-h-64 px-6 py-10 top-1/2 left-1/2 -translate-1/2 z-10 animate-tada animate-duration-400"
-  >
+  <EndOfGameModal ref="endOfGameModal">
     <p data-test="eog-message" v-text="isVictory ? VICTORY_MESSAGE : DEFEAT_MESSAGE" />
     <div v-if="isDefeat" class="text-lg" data-test="word-of-the-day">
       The word of the day was
       <span class="font-bold">
-        {{ isDefeat ? wordOfTheDay : '' }}
+        {{ wordOfTheDay }}
       </span>
     </div>
-    <button class="cursor-pointer text-sm" @click="() => (manualClose = true)">Review board</button>
-  </div>
+  </EndOfGameModal>
 </template>
