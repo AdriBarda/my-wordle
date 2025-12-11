@@ -52,7 +52,6 @@ watch(
       nextTick(() => inputRef.value?.focus())
     }
   },
-  { immediate: true },
 )
 
 const onSubmit = () => emit('submit')
