@@ -202,14 +202,14 @@ const handleKeyboardAction = (event: KeyboardKey) => {
     <div class="flex items-center gap-5">
       <button
         v-if="isGameOver"
-        class="py-1 px-3 bg-black text-white rounded-lg hover:bg-gray-900"
+        class="py-1 px-3 bg-black text-white rounded-lg hover:bg-gray-800 hover:scale-110 transition duration-100 ease-in-out cursor-pointer"
         @click="playAgain"
       >
         Play Again
       </button>
       <button
         v-if="isGameOver"
-        class="py-1 px-3 bg-white text-gray-800 rounded-lg hover:bg-gray-400 hover:text-gray-100 border border-black"
+        class="py-1 px-3 bg-white text-gray-800 rounded-lg hover:bg-gray-200 hover:text-gray-500 hover:scale-110 transition duration-100 ease-in-out border border-black cursor-pointer"
         @click="openEndOfGameModal"
       >
         View Result
