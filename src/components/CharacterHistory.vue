@@ -66,6 +66,21 @@ const keyboardData = computed(() =>
 watch(
   () => props.guesses.length,
   (newLength, oldLength) => {
+    // Reset keyboard state when a new game starts
+    if (newLength === 0 && oldLength > 0) {
+      if (revealTimeoutId.value !== null) {
+        clearTimeout(revealTimeoutId.value)
+        revealTimeoutId.value = null
+      }
+      if (stableTimeoutId.value !== null) {
+        clearTimeout(stableTimeoutId.value)
+        stableTimeoutId.value = null
+      }
+      revealedGuessCount.value = 0
+      lastStableKeyFeedbacks.value = {}
+      return
+    }
+
     if (newLength > oldLength) {
       if (revealTimeoutId.value !== null) clearTimeout(revealTimeoutId.value)
       if (stableTimeoutId.value !== null) clearTimeout(stableTimeoutId.value)

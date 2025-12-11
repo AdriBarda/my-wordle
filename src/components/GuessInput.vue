@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { WORD_SIZE } from '@/settings'
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, nextTick } from 'vue'
 import GuessDisplayer from './GuessDisplayer.vue'
 
 const props = defineProps<{
@@ -23,6 +23,7 @@ const sanitise = (value: string) =>
     .replace(/[^A-Z]/g, '')
 
 const guess = computed(() => props.modelValue ?? '')
+const inputRef = ref<HTMLInputElement | null>(null)
 
 const onInput = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -43,6 +44,16 @@ watch(
   },
 )
 
+// Waiting for DOM update to focus input
+watch(
+  () => props.disabled,
+  (isDisabled) => {
+    if (!isDisabled) {
+      nextTick(() => inputRef.value?.focus())
+    }
+  },
+)
+
 const onSubmit = () => emit('submit')
 </script>
 <template>
@@ -53,14 +64,17 @@ const onSubmit = () => emit('submit')
       :class="{ 'animate-shake animate-duration-250': guessIsInvalid }"
     />
     <input
+      ref="inputRef"
       type="text"
       :value="guess"
-      class="opacity-0 absolute -z-10"
+      class="absolute inset-0 w-px h-px opacity-0 pointer-events-none caret-transparent text-transparent bg-transparent border-0 outline-none"
       :maxlength="WORD_SIZE"
-      autofocus
       :disabled="disabled"
+      inputmode="none"
+      aria-hidden="true"
+      tabindex="-1"
+      autofocus
       @input="onInput"
-      @blur="({ target }) => (target as HTMLInputElement).focus()"
       @keydown.enter.prevent="onSubmit"
     />
   </section>
