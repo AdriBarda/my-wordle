@@ -203,16 +203,14 @@ const handleKeyboardAction = (event: KeyboardKey) => {
 <template>
   <section class="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto px-4 pb-10 pt-2">
     <h1 class="text-3xl sm:text-5xl py-3 font-semibold font-mono">My Wordle Version</h1>
-    <div class="flex items-center gap-5">
+    <div v-if="isGameOver" class="flex items-center gap-5">
       <button
-        v-if="isGameOver"
         class="py-1 px-3 bg-black text-white rounded-lg hover:bg-gray-800 hover:scale-110 transition duration-100 ease-in-out cursor-pointer"
         @click="playAgain"
       >
         Play Again
       </button>
       <button
-        v-if="isGameOver"
         class="py-1 px-3 bg-white text-gray-800 rounded-lg hover:bg-gray-200 hover:text-gray-500 hover:scale-110 transition duration-100 ease-in-out border border-black cursor-pointer"
         @click="openEndOfGameModal"
       >
