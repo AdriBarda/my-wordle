@@ -68,9 +68,12 @@ const onSubmit = () => emit('submit')
       ref="inputRef"
       type="text"
       :value="guess"
-      class="opacity-0 absolute -z-10"
+      class="absolute inset-0 w-px h-px opacity-0 pointer-events-none caret-transparent text-transparent bg-transparent border-0 outline-none"
       :maxlength="WORD_SIZE"
       :disabled="disabled"
+      inputmode="none"
+      aria-hidden="true"
+      tabindex="-1"
       autofocus
       @input="onInput"
       @keydown.enter.prevent="onSubmit"

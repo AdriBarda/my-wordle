@@ -3,7 +3,7 @@
 @plugin "@midudev/tailwind-animations";
 
 body {
-  height: 100vh;
+  height: 100dvh;
 }
 
 #app {
@@ -12,4 +12,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+button,
+input,
+[role='button'] {
+  touch-action: manipulation;
 }
